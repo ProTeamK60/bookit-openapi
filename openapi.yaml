@@ -1,0 +1,290 @@
+openapi: 3.0.0
+info:
+  version: '0.0.1'
+  title: 'Bookit API'
+  description: 'API Specification for all services of the Bookit application'
+
+servers:
+# Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/Knowit-eventapp/bookit-api/0.0.1
+  - description: Version 1 of the API
+    url: /api/v1
+
+tags: 
+  - name: "Event"
+    description: "APIs related to bookit-event"
+  - name: "Registration"
+    description: "APIs related to bookit-registration"
+  - name: "Notification"
+    description: "APIs related to bookit-notification"
+
+paths:
+  /events:
+    get:
+      summary: "Find all existing events"
+      description: "Find all existing events"
+      tags: 
+        - Event
+      operationId: findAllEvents
+      responses:
+        '200':
+          description: "Successfull response for find all events"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+            
+        '404':
+          description: "Error response if no events are found"
+    post:
+      summary: "Create or update an event"
+      description: "Create or update an event"
+      tags: 
+        - Event
+      operationId: createOrUpdateEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: "Successfully created an event"
+          headers:
+            Access-Control-Expose-Headers:
+              description: "Which headers to expose"
+              schema:
+                type: string
+          content:
+            text/plain:
+              schema:
+                type: string
+        '202':
+          description: "Successfully updated an event"
+          headers:
+            Location:
+              description: "The location of the event"
+              schema: 
+                type: string
+            Access-Control-Expose-Headers:
+              description: "Which headers to expose"
+              schema:
+                type: string
+            
+        '404':
+          description: "Event to be created or updated was not found"
+          content:
+            text/plain:
+              schema:
+                type: string
+      
+            
+  /events/{eventId}:
+    get:
+      summary: "Find event by eventId"
+      description: "Find event by eventId"
+      tags: 
+        - Event
+      operationId: findEventById
+      parameters: 
+        - name: eventId
+          in: path
+          required: true
+          description: "The ID of the event to find"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Successful response for finding event by ID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        '404':
+          description: "Error response if event is not found for event ID"
+          
+  /registrations:
+    get:
+      summary: "Find all registrations"
+      description: "Find all registrations"
+      operationId: findAllRegistrations
+      tags: 
+        - Registration
+      responses:
+        '200':
+          description: "Successfull response when some registrations where found"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Registration"
+        '404':
+          description: "Error response if no registrations where found"
+    post:
+      summary: "Add a new registration"
+      description: "Add a new registration"
+      operationId: registerToEvent
+      tags:
+        - Registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Registration"
+      responses:
+        '201':
+          description: "Successful response if registration was created"
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: "Error response if unvalid registration is sent"
+          content: 
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: "Error response if registration already exists"
+          content:
+            text/plain:
+              schema:
+                type: string
+                
+  /registrations/{id}:
+    delete:
+      summary: "Delete a registration by id"
+      description: "Delete a registration by id"
+      operationId: deleteByRegistrationId
+      tags:
+        - Registration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the registration"
+          schema:
+            type: string
+      responses:
+        '204':
+          description: "Response that is always returned"
+          
+  /registrations/{email}/{eventId}:
+    delete:
+      summary: "Delete a registration by email and event"
+      description: "Delete a registration by email and event"
+      operationId: deleteByEmailAndEventId
+      tags:
+        - Registration
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: "The email of the participant of the registration"
+          schema:
+            type: string
+        - name: eventId
+          in: path
+          required: true
+          description: "The ID for the event the registration is for"
+          schema:
+            type: string
+      responses:
+        '204':
+          description: "Response that is always returned"
+          
+  /participants/event/{eventId}:
+    get:
+      summary: "Find all participants for event by event ID"
+      description: "Find all participants for event by event ID"
+      operationId: getParticipantsByEventId
+      tags:
+        - Registration
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: "The ID of the event"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Successful response if participants was found for event"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Participant"
+        '404':
+          description: "Error response if no participants where found for event"
+          
+  /registration:
+    post:
+      summary: "Create confirmation for registration"
+      description: "Create confirmation for registration"
+      operationId: createRegistrationConfirmation
+      tags:
+        - Notification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Notification"
+      responses:
+        '204':
+          description: "Response that is always returned"
+        
+    
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        eventId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        eventStart:
+          type: integer
+          format: int64
+        eventEnd:
+          type: integer
+          format: int64
+        deadlineRVSP:
+          type: integer
+          format: int64
+        location:
+          type: string
+        organizer:
+          type: string
+          
+    Registration:
+      type: object
+      properties:
+        eventId:
+          type: string
+        registrationId:
+          type: string
+        participant:
+          $ref: "#/components/schemas/Participant"
+        
+    Participant:
+      type: object
+      properties:
+        email:
+          type: string
+          
+    Notification:
+      type: object
+      properties:
+        eventId:
+          type: string
+        participant:
+          $ref: "#/components/schemas/Participant"
